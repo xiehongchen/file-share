@@ -1,0 +1,53 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  /* 指定如何解析语法 */
+  "parser": "vue-eslint-parser",
+   /* 继承已有的规则 */
+  "extends": [
+    "eslint:recommended",
+    "plugin:vue/vue3-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
+    "eslint-config-prettier"
+  ],
+  /** 优先级低于 parse 的语法解析配置 */
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "parser": "@typescript-eslint/parser",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  /*
+   * "off" 或 0    ==>  关闭规则
+   * "warn" 或 1   ==>  打开的规则作为警告（不影响代码执行）
+   * "error" 或 2  ==>  规则作为一个错误（代码不能执行，界面报错）
+   */
+  "plugins": ["vue", "@typescript-eslint", "prettier"],
+  "rules": {
+    "vue/multi-word-component-names": "off", // 禁用vue文件强制多个单词命名
+    "@typescript-eslint/no-explicit-any": ["off"], //允许使用any
+    "@typescript-eslint/no-this-alias": [
+      "error",
+      {
+        "allowedNames": ["that"] // this可用的局部变量名称
+      }
+    ],
+    "@typescript-eslint/ban-ts-comment": "off", //允许使用@ts-ignore
+    "@typescript-eslint/no-non-null-assertion": "off", //允许使用非空断言
+    "no-console": [
+      //提交时不允许有console.log
+      "warn",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
+    "no-debugger": "warn", //提交时不允许有debugger
+    "no-extra-semi": "error"
+  }
+}
