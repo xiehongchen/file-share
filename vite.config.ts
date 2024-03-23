@@ -5,10 +5,10 @@ import viteCompression from 'vite-plugin-compression'
 import { visualizer } from 'rollup-plugin-visualizer'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
-
   return {
     plugins: [
       vue(),
@@ -20,22 +20,22 @@ export default defineConfig(() => {
       AutoImport({
         imports: ['vue', 'vue-router'],
         dts: 'src/auto-imports.d.ts',
-        eslintrc: { enabled: true }
+        eslintrc: { enabled: true },
+        resolvers: [ElementPlusResolver()]
       }),
       Components({
         // 按需引入
         dts: true,
-        dirs: ["src/components"],
-        resolvers:[
-        ]
-      }),
+        dirs: ['src/components'],
+        resolvers: [ElementPlusResolver()]
+      })
     ],
     //这里进行配置别名
     resolve: {
       alias: {
         '@': path.resolve('./src'), // @代替src
-        '#': path.resolve('./types'), // #代替types
-      },
+        '#': path.resolve('./types') // #代替types
+      }
     },
     server: {
       proxy: {
@@ -50,21 +50,21 @@ export default defineConfig(() => {
     css: {
       preprocessorOptions: {
         scss: {
-          additionalData: '@import "@/assets/styles/index.scss";',
-        },
-      },
+          additionalData: '@import "@/assets/styles/index.scss";'
+        }
+      }
     },
     build: {
       rollupOptions: {
         output: {
           manualChunks: {
-            vue: ['vue', 'pinia', 'vue-router'],
+            vue: ['vue', 'pinia', 'vue-router']
           },
-          chunkFileNames: "static/js/[name]-[hash].js",
-          entryFileNames: "static/js/[name]-[hash].js",
-          assetFileNames: "static/[ext]/[name]-[hash].[ext]",
-        },
-      },
-    },
+          chunkFileNames: 'static/js/[name]-[hash].js',
+          entryFileNames: 'static/js/[name]-[hash].js',
+          assetFileNames: 'static/[ext]/[name]-[hash].[ext]'
+        }
+      }
+    }
   }
 })
