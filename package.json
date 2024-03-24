@@ -1,0 +1,30 @@
+{
+  "name": "file",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "server": "rollup -c rollup.server.js && node dist/server.js",
+    "preview": "vite preview",
+    "start": "pnpm run build && concurrently \"npm run server\" \"npm run dev\""
+  },
+  "dependencies": {
+    "express": "^4.19.1",
+    "nanoid": "^5.0.6",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5",
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "concurrently": "^8.2.2",
+    "rollup": "^4.13.0",
+    "rollup-plugin-esbuild": "^6.1.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vue-tsc": "^2.0.6"
+  }
+}
