@@ -4,7 +4,8 @@ import { CONNECTION_STATE, DEVICE_TYPE, Member } from "../types/client.ts"
 import { CLINT_EVENT, SERVER_EVENT, ServerFn } from "../types/websocket.ts"
 import { SHAKE_HANDS, ERROR_TYPE } from "../types/server.ts";
 import { SocketClient } from "./utils/socket"
-import Model from './components/model.vue'
+// import Model from './components/model.vue'
+import ChatBox from './components/chatBox.vue'
 import { ElMessage } from 'element-plus'
 const client = ref<SocketClient | null>(null)
 const id = ref('')
@@ -121,7 +122,10 @@ onUnmounted(() => {
 <template>
   <div class="container">
     <div class="deviceGroup">
-      {{ '当前用户：' + id }}
+      <div class="current">
+        <div>当前用户</div>
+        <div>{{ id }}</div>
+      </div>
       <div v-for="item in members" :key="item.id" class="device" @click="onPeerConnection(item)">
         <div class="icon">
           {{ DEVICE_TYPE.MOBILE ? '手机' : '电脑' }}
@@ -129,34 +133,30 @@ onUnmounted(() => {
         <div class="name">{{ item.id.slice(0, 7) }}</div>
       </div>
     </div>
-    <Model v-model:visible="visible" :client="client" v-model:state="state" v-model:id="id" v-model:peerId="peerId" />
+    <chat-box v-model:visible="visible" :client="(client as SocketClient)" v-model:state="state" v-model:id="id" v-model:peerId="peerId"></chat-box>
+    <!-- <Model v-model:visible="visible" :client="(client as SocketClient)" v-model:state="state" v-model:id="id" v-model:peerId="peerId" /> -->
   </div>
 </template>
 
 <style scoped lang="scss">
 .container {
   display: flex;
-  height: 100%;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
+  height: 100vh;
+  overflow: hidden;
   width: 100%;
 
   .deviceGroup {
     display: flex;
     font-size: 14px;
-    justify-content: center;
-    align-items: center;
+    padding: 10px;
+    border-right: 1px solid #eee;
     flex-direction: column;
-    left: 0;
-    position: fixed;
-    right: 0;
-    top: 40%;
-    user-select: none;
-    width: 100%;
+
+    .current {
+      margin-bottom: 20px;
+    }
 
     .device {
-      width: 100px;
       align-items: center;
       animation-duration: 0.5s;
       animation-fill-mode: forwards;
@@ -166,10 +166,9 @@ onUnmounted(() => {
       display: flex;
       flex-direction: column;
       flex-wrap: wrap;
-      margin: 20px;
-      border-radius: 20%;
       background-color: rgb(93, 155, 231);
-      padding: 20px;
+      padding: 10px;
+      margin-bottom: 10px;
 
       &:hover {
         transform: scale(1.1);
@@ -192,5 +191,11 @@ onUnmounted(() => {
   100% {
     opacity: 1;
   }
+}
+</style>
+<style>
+body, html {
+  margin: 0;
+  padding: 0;
 }
 </style>

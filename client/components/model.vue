@@ -63,7 +63,6 @@ const peerId = defineModel('peerId', { type: String, default: '' })
 const state = defineModel('state', { default: CONNECTION_STATE.READY })
 interface propsType {
   client: SocketClient | null
-  id: string
 }
 const props = withDefaults(defineProps<propsType>(), {
   client: null,
@@ -197,7 +196,7 @@ const downloadFile = (id: string, fileName: string) => {
 .modal {
   box-sizing: border-box;
   max-height: 100%;
-  max-width: 96%;
+  max-width: 80%;
 
   .title {
     align-items: center;
