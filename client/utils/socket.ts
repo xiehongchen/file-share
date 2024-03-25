@@ -48,7 +48,6 @@ export class SocketClient {
   };
 
   private onConnect = () => {
-    // https://socket.io/docs/v4/server-socket-instance/#socketid
     this.emit(CLINT_EVENT.JOIN_ROOM, {
       id: this.id,
       device: isMobile() ? DEVICE_TYPE.MOBILE : DEVICE_TYPE.PC,

@@ -26,6 +26,7 @@
       <div v-for="item, index in list" :key="index" class="messageItem" 
         :class="{'alignRight' : item.from === 'self' }">
         <div class="messageContent">
+          <div>{{ item }}</div>
           <div v-if="item.type === 'text'">{{ item.data }}</div>
           <div v-else class="fileMessage">
             <div class="fileInfo">

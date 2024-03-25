@@ -19,7 +19,6 @@ const onJoinRoom: ServerFn<typeof SERVER_EVENT.JOINED_ROOM> = (data) => {
   members.value.push(data)
   console.log('onJoinRoom', data)
   console.log('onJoinRoom', members.value)
-
 }
 // 加入房间的成员
 const onJoinedMember: ServerFn<typeof SERVER_EVENT.JOINED_MEMBER> = (event) => {
@@ -38,7 +37,7 @@ const onLeftRoom: ServerFn<typeof SERVER_EVENT.LEFT_ROOM> = (event) => {
 }
 // 接收到请求
 const onReceiveRequest: ServerFn<typeof SERVER_EVENT.FORWARD_REQUEST> = (event) => {
-  console.log('onReceiveRequest', event)
+  console.log("接收请求", event);
   const { origin } = event
   if (!peerId.value && !visible.value) {
     peerId.value = origin
@@ -77,9 +76,10 @@ const onUnpeer: ServerFn<typeof SERVER_EVENT.FORWARD_UNPEER> = (event) => {
     state.value = CONNECTION_STATE.READY
   }
 }
-
+// 发起连接
 const onPeerConnection = (member: Member) => {
   if (client.value) {
+    // 向一个用户发起请求连接
     client.value.emit(CLINT_EVENT.SEND_REQUEST, {
       target: member.id,
       origin: id.value
@@ -121,6 +121,7 @@ onUnmounted(() => {
 <template>
   <div class="container">
     <div class="deviceGroup">
+      {{ '当前用户：' + id }}
       <div v-for="item in members" :key="item.id" class="device" @click="onPeerConnection(item)">
         <div class="icon">
           {{ DEVICE_TYPE.MOBILE ? '手机' : '电脑' }}
@@ -128,12 +129,7 @@ onUnmounted(() => {
         <div class="name">{{ item.id.slice(0, 7) }}</div>
       </div>
     </div>
-    <Model 
-    v-model:visible="visible"
-    :client="client"
-    v-model:state="state"
-    v-model:id="id"
-    v-model:peerId="peerId" />
+    <Model v-model:visible="visible" :client="client" v-model:state="state" v-model:id="id" v-model:peerId="peerId" />
   </div>
 </template>
 
@@ -150,13 +146,17 @@ onUnmounted(() => {
     display: flex;
     font-size: 14px;
     justify-content: center;
+    align-items: center;
+    flex-direction: column;
     left: 0;
     position: fixed;
     right: 0;
     top: 40%;
     user-select: none;
     width: 100%;
+
     .device {
+      width: 100px;
       align-items: center;
       animation-duration: 0.5s;
       animation-fill-mode: forwards;
