@@ -1,21 +1,30 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { CONNECTION_STATE, Member } from "../types/client.ts"
+import { ref, onUnmounted } from 'vue'
+import { CONNECTION_STATE, DEVICE_TYPE, Member } from "../types/client.ts"
 import { CLINT_EVENT, SERVER_EVENT, ServerFn } from "../types/websocket.ts"
-import { SHAKE_HANDS } from "../types/server.ts";
+import { SHAKE_HANDS, ERROR_TYPE } from "../types/server.ts";
 import { SocketClient } from "./utils/socket"
+import Model from './components/model.vue'
+import { ElMessage } from 'element-plus'
 const client = ref<SocketClient | any | null>(null)
 const id = ref('')
 const peerId = ref('')
 const visible = ref(false)
-const members = ref<Member[]>([])
+const members = ref<Member[]>([
+  {
+    id: '123123123123',
+    device: DEVICE_TYPE.PC
+  }
+])
 const state = ref(CONNECTION_STATE.READY)
 
 
 // 加入房间
 const onJoinRoom: ServerFn<typeof SERVER_EVENT.JOINED_ROOM> = (data) => {
-  console.log('onJoinRoom', data)
   members.value.push(data)
+  console.log('onJoinRoom', data)
+  console.log('onJoinRoom', members.value)
+
 }
 // 加入房间的成员
 const onJoinedMember: ServerFn<typeof SERVER_EVENT.JOINED_MEMBER> = (event) => {
@@ -74,24 +83,28 @@ const onUnpeer: ServerFn<typeof SERVER_EVENT.FORWARD_UNPEER> = (event) => {
   }
 }
 
-// const onPeerConnection = (member: Member) => {
-//   if (client.value.current) {
-//     client.value.current.emit(CLINT_EVENT.SEND_REQUEST, {
-//       target: member.id,
-//       origin: id.value
-//     }, (state: any) => {
-//       if (state.code !== ERROR_TYPE.NO_ERROR && state.message) {
-//         ElMessage.error(state.message)
-//       }
-//     })
-//     visible.value = true
-//     peerId.value = member.id
-//     state.value = CONNECTION_STATE.CONNECTING
-//   }
-// }
+const onPeerConnection = (member: Member) => {
+  visible.value = true
+  peerId.value = member.id
+  if (client.value.current) {
+    client.value.current.emit(CLINT_EVENT.SEND_REQUEST, {
+      target: member.id,
+      origin: id.value
+    }, (state: any) => {
+      if (state.code !== ERROR_TYPE.NO_ERROR && state.message) {
+        ElMessage.error(state.message);
+
+      }
+    })
+    visible.value = true
+    peerId.value = member.id
+    state.value = CONNECTION_STATE.CONNECTING
+  }
+}
 // 初始化
-onMounted(() => {
+const init = () => {
   client.value = new SocketClient(location.host)
+  console.log('client.value', client.value)
   client.value.on(SERVER_EVENT.JOINED_ROOM, onJoinRoom);
   client.value.on(SERVER_EVENT.JOINED_MEMBER, onJoinedMember);
   client.value.on(SERVER_EVENT.LEFT_ROOM, onLeftRoom);
@@ -100,7 +113,8 @@ onMounted(() => {
   client.value.on(SERVER_EVENT.FORWARD_UNPEER, onUnpeer);
 
   id.value = client.value.id
-})
+}
+init()
 onUnmounted(() => {
   client.value.off(SERVER_EVENT.JOINED_ROOM, onJoinRoom);
   client.value.off(SERVER_EVENT.JOINED_MEMBER, onJoinedMember);
@@ -109,10 +123,93 @@ onUnmounted(() => {
   client.value.off(SERVER_EVENT.FORWARD_RESPONSE, onReceiveResponse);
   client.value.off(SERVER_EVENT.FORWARD_UNPEER, onUnpeer);
 })
+/**
+ *       <div className={styles.deviceGroup}>
+        {members.map(member => (
+          <div key={member.id} className={styles.device} onClick={() => onPeerConnection(member)}>
+            <div className={styles.icon}>
+              {member.device === DEVICE_TYPE.MOBILE ? PhoneIcon : ComputerIcon}
+            </div>
+            <div className={styles.name}>{member.id.slice(0, 7)}</div>
+          </div>
+        ))}
+      </div>
+ */
 </script>
 
 <template>
-  <div></div>
+  <div class="container">
+    <div class="deviceGroup">
+      <div v-for="item in members" :key="item.id" class="device" @click="onPeerConnection(item)">
+        <div class="icon">
+          {{ DEVICE_TYPE.MOBILE ? '手机' : '电脑' }}
+        </div>
+        <div class="name">{{ item.id.slice(0, 7) }}</div>
+      </div>
+    </div>
+    <Model 
+    v-model:visible="visible"
+    :client="client"
+    :state="state"
+    v-model:id="id"
+    v-model:peerId="peerId" />
+  </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.container {
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+
+  .deviceGroup {
+    display: flex;
+    font-size: 14px;
+    justify-content: center;
+    left: 0;
+    position: fixed;
+    right: 0;
+    top: 40%;
+    user-select: none;
+    width: 100%;
+    .device {
+      align-items: center;
+      animation-duration: 0.5s;
+      animation-fill-mode: forwards;
+      animation-name: scale-in;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      margin: 20px;
+      border-radius: 20%;
+      background-color: rgb(93, 155, 231);
+      padding: 20px;
+
+      &:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      }
+
+      .name {
+        color: var(--color-text-1);
+        margin-top: 6px;
+      }
+    }
+  }
+}
+
+@keyframes scale-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+</style>
