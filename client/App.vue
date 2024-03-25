@@ -150,7 +150,7 @@ onUnmounted(() => {
     <Model 
     v-model:visible="visible"
     :client="client"
-    :state="state"
+    v-model:state="state"
     v-model:id="id"
     v-model:peerId="peerId" />
   </div>

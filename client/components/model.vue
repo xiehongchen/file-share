@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="visible" width="500" class="modal" ref="modalRef">
+  <el-dialog v-model="visible" width="500" class="modal" ref="modalRef" @close="onCancel">
     <template #header>
       <div class="title">
         <div class="dot" :style="{
@@ -55,10 +55,10 @@ import { ref, onUnmounted } from 'vue'
 import { base64ToBlob, formatBytes, getChunkByIndex, onScroll } from "../utils/format";
 import { CLINT_EVENT, SERVER_EVENT, ServerFn } from "../../types/websocket";
 import { nanoid } from "nanoid";
-const visible = defineModel('visible')
+const visible = defineModel('visible', { type: Boolean, default: false })
 const id = defineModel('id', { type: String, default: '' })
 const peerId = defineModel('peerId', { type: String, default: '' })
-const state = defineModel('state')
+const state = defineModel('state', { default: CONNECTION_STATE.READY })
 interface propsType {
   client: SocketClient | null
   id: string
@@ -74,6 +74,12 @@ const list = ref<TransferListItem[]>([])
 const modalRef = ref(null)
 
 console.log('props', props)
+
+const onCancel = () => {
+  props.client?.emit(CLINT_EVENT.SEND_UNPEER, { target: peerId.value, origin: id.value });
+  state.value = CONNECTION_STATE.READY
+  visible.value = false
+}
 const updateFileProgress = (id: string, progress: number, newList = list.value) => {
   const last = newList.find(item => item.type === "file" && item.id === id)
   if (last && last.type === "file") {
@@ -103,7 +109,21 @@ const onMessage: ServerFn<typeof SERVER_EVENT.FORWARD_MESSAGE> = (event) => {
       mapper[id][current] = base64ToBlob(chunk)
       sendMessage({ type: "file-next", id, current: current + 1, size, total })
     }
+  } else if (data.type === 'file-next') {
+    const { id, current, total, size } = data
+    const progress = Math.floor((current / total) * 100)
+    updateFileProgress(id, progress)
+    const file = fileSource.value[id]
+    if (file) {
+      getChunkByIndex(file, current).then(chunk => {
+        sendMessage({ type: "file-chunk", id, current, total, size, chunk });
+      })
+    }
+  } else if (data.type === "file-finish") {
+    const { id } = data
+    updateFileProgress(id, 100)
   }
+  onScroll(listRef.value)
 }
 
 props.client?.on(SERVER_EVENT.FORWARD_MESSAGE, onMessage)

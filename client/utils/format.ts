@@ -1,7 +1,6 @@
 import { CHUNK_SIZE } from "../../types/client";
 import pako from "pako";
 import { Base64 } from "js-base64";
-import { Ref } from "vue";
 
 export const formatBytes = (bytes: number) => {
   if (bytes === 0) return "0 B";
