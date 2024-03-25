@@ -6,16 +6,11 @@ import { SHAKE_HANDS, ERROR_TYPE } from "../types/server.ts";
 import { SocketClient } from "./utils/socket"
 import Model from './components/model.vue'
 import { ElMessage } from 'element-plus'
-const client = ref<SocketClient | any | null>(null)
+const client = ref<SocketClient | null>(null)
 const id = ref('')
 const peerId = ref('')
 const visible = ref(false)
-const members = ref<Member[]>([
-  {
-    id: '123123123123',
-    device: DEVICE_TYPE.PC
-  }
-])
+const members = ref<Member[]>([])
 const state = ref(CONNECTION_STATE.READY)
 
 
@@ -49,13 +44,13 @@ const onReceiveRequest: ServerFn<typeof SERVER_EVENT.FORWARD_REQUEST> = (event) 
     peerId.value = origin
     visible.value = true
     state.value = CONNECTION_STATE.CONNECTED
-    client.value?.current?.emit(CLINT_EVENT.SEND_RESPONSE, {
+    client.value?.emit(CLINT_EVENT.SEND_RESPONSE, {
       target: origin,
       origin: id.value,
       code: SHAKE_HANDS.ACCEPT
     })
   } else {
-    client.value?.current?.emit(CLINT_EVENT.SEND_RESPONSE, {
+    client.value?.emit(CLINT_EVENT.SEND_RESPONSE, {
       target: origin,
       origin: id.value,
       code: SHAKE_HANDS.REJECT,
@@ -84,10 +79,8 @@ const onUnpeer: ServerFn<typeof SERVER_EVENT.FORWARD_UNPEER> = (event) => {
 }
 
 const onPeerConnection = (member: Member) => {
-  visible.value = true
-  peerId.value = member.id
-  if (client.value.current) {
-    client.value.current.emit(CLINT_EVENT.SEND_REQUEST, {
+  if (client.value) {
+    client.value.emit(CLINT_EVENT.SEND_REQUEST, {
       target: member.id,
       origin: id.value
     }, (state: any) => {
@@ -116,25 +109,13 @@ const init = () => {
 }
 init()
 onUnmounted(() => {
-  client.value.off(SERVER_EVENT.JOINED_ROOM, onJoinRoom);
-  client.value.off(SERVER_EVENT.JOINED_MEMBER, onJoinedMember);
-  client.value.off(SERVER_EVENT.LEFT_ROOM, onLeftRoom);
-  client.value.off(SERVER_EVENT.FORWARD_REQUEST, onReceiveRequest);
-  client.value.off(SERVER_EVENT.FORWARD_RESPONSE, onReceiveResponse);
-  client.value.off(SERVER_EVENT.FORWARD_UNPEER, onUnpeer);
+  client.value?.off(SERVER_EVENT.JOINED_ROOM, onJoinRoom);
+  client.value?.off(SERVER_EVENT.JOINED_MEMBER, onJoinedMember);
+  client.value?.off(SERVER_EVENT.LEFT_ROOM, onLeftRoom);
+  client.value?.off(SERVER_EVENT.FORWARD_REQUEST, onReceiveRequest);
+  client.value?.off(SERVER_EVENT.FORWARD_RESPONSE, onReceiveResponse);
+  client.value?.off(SERVER_EVENT.FORWARD_UNPEER, onUnpeer);
 })
-/**
- *       <div className={styles.deviceGroup}>
-        {members.map(member => (
-          <div key={member.id} className={styles.device} onClick={() => onPeerConnection(member)}>
-            <div className={styles.icon}>
-              {member.device === DEVICE_TYPE.MOBILE ? PhoneIcon : ComputerIcon}
-            </div>
-            <div className={styles.name}>{member.id.slice(0, 7)}</div>
-          </div>
-        ))}
-      </div>
- */
 </script>
 
 <template>

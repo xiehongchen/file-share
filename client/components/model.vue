@@ -1,5 +1,6 @@
 <template>
-  <el-dialog v-model="visible" width="500" class="modal" ref="modalRef" @close="onCancel">
+  <el-dialog v-model="visible" width="500" class="modal" ref="modalRef" @close="onCancel"
+  :close-on-click-modal="false" :close-on-press-escape="false">
     <template #header>
       <div class="title">
         <div class="dot" :style="{
@@ -88,6 +89,7 @@ const updateFileProgress = (id: string, progress: number, newList = list.value) 
   }
 }
 const onMessage: ServerFn<typeof SERVER_EVENT.FORWARD_MESSAGE> = (event) => {
+  console.log('onMessage', event)
   if (event.origin !== peerId.value) return void 0
   const data = event.message
   if (data.type === "text") {
